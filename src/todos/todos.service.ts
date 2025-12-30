@@ -4,18 +4,25 @@ import { UpdateTodoDto } from './dto/update-todo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import TodoStatusEnum from './enums/todo-status.enum';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TodosService {
     constructor(
         @InjectRepository(Todo)
-        private readonly todoRepository: Repository<Todo>
+        private readonly todoRepository: Repository<Todo>,
+        private readonly userService: UsersService
     ) {}
 
     async createNewTodo(createTodoDto: CreateTodoDto, userId) {
-        const newTodo = this.todoRepository.create(createTodoDto)
-        newTodo.user = userId
+        const checkUser = await this.userService.findUserById(userId)
+        const newTodo = this.todoRepository.create({
+            title: createTodoDto.title,
+            description: createTodoDto.description,
+            user: checkUser
+        })
+
         return await this.todoRepository.save(newTodo)
     }
 
@@ -26,5 +33,12 @@ export class TodosService {
         if(!findTodo) throw new BadRequestException('access denid')
         
         return await this.todoRepository.update(todoId, updateTodoDto)
+    }
+
+    async usersTodoList(id: number, status?: TodoStatusEnum) {
+        const todoList = this.todoRepository.createQueryBuilder('todo')
+        .where('todo.user.id = :id', { id: id })
+        if(status) todoList.andWhere('todo.status = :status', { status: status })
+        return todoList.getMany()
     }
 }

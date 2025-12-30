@@ -4,7 +4,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { log } from 'console';
+import TodoStatusEnum from 'src/todos/enums/todo-status.enum';
+
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,12 @@ export class UsersService {
 
   async findUserByUserName(username: string) {
     const findUser = await this.userRepository.findOneBy({ username: username })
+    return findUser
+  }
+
+  async findUserById(id: number) {
+    const findUser = await this.userRepository.findOneBy({ id: id })
+    if(!findUser) throw new NotFoundException()
     return findUser
   }
 

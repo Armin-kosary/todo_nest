@@ -1,5 +1,5 @@
 import { Todo } from "src/todos/entities/todo.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -14,6 +14,9 @@ export class User {
 
     @Column({ nullable: true })
     firstName: string
+
+    @UpdateDateColumn()
+    updatedAt: Date
 
     @OneToMany(()=> Todo, (todo)=> todo.user)
     todos: Todo[]
