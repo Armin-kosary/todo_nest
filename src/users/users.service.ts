@@ -28,7 +28,6 @@ export class UsersService {
 
   async createNewUser(createUserDto: CreateUserDto) {
     const checkUserAvailability = await this.findUserByUserName(createUserDto.username)
-    if(checkUserAvailability) throw new BadRequestException('user with this username is available')
 
     const newUser = this.userRepository.create(createUserDto)
     return this.userRepository.save(newUser)

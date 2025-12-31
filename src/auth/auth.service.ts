@@ -20,7 +20,6 @@ export class AuthService {
 
   async loginUser(loginUserDto: LoginUserDto) {
     const user = await this.usersService.findUserByUserName(loginUserDto.username)
-    if(!user) throw new BadRequestException('there is no user with this username')
 
     if(await bcrypt.compare(loginUserDto.password, user.password)) {
       const payload = { sub: user.id, username: user.username, firstName: user.firstName }
