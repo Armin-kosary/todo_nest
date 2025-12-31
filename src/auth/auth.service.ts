@@ -1,32 +1,44 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService 
-  ){}
+    private readonly jwtService: JwtService,
+  ) {}
 
   async registerUser(createUserDto: CreateUserDto) {
-    createUserDto.password = await bcrypt.hash(createUserDto.password, 10)
-    return this.usersService.createNewUser(createUserDto)
+    console.log('hi');
+    createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    return this.usersService.createNewUser(createUserDto);
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
-    const user = await this.usersService.findUserByUserName(loginUserDto.username)
+    const user = await this.usersService.findUserByUserName(
+      loginUserDto.username,
+    );
 
-    if(await bcrypt.compare(loginUserDto.password, user.password)) {
-      const payload = { sub: user.id, username: user.username, firstName: user.firstName }
-      const token = this.jwtService.sign(payload)
-      return { AccessToken: token }
+    if (!user) throw new NotFoundException('user does not exist');
+
+    if (await bcrypt.compare(loginUserDto.password, user.password)) {
+      const payload = {
+        sub: user.id,
+        username: user.username,
+        firstName: user.firstName,
+      };
+      const token = this.jwtService.sign(payload);
+      return { AccessToken: token };
     }
 
-    return new BadRequestException()
+    return new BadRequestException();
   }
 }
