@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         })
     }
     async validate(payload: any) {
-        const checkUserAvailability = this.userService.findUserByUserName(payload.mobile)
+        const checkUserAvailability = this.userService.findUserByUserName(payload.sub)
         if(!checkUserAvailability) throw new BadRequestException('there is no user')
 
         return {
